@@ -52,7 +52,7 @@ public class Server {
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("Потоки не были закрыты!");
+			System.err.println("Exception in closeConnections");
 		}
 	}
 
@@ -85,7 +85,7 @@ public class Server {
 				synchronized(connections) {
 					Iterator<Connection> iter = connections.iterator();
 					while(iter.hasNext()) {
-						((Connection) iter.next()).out.println(name + " cames now");
+						((Connection) iter.next()).out.println(name +  Const.newPerson);
 					}
 				}
 				
@@ -94,7 +94,6 @@ public class Server {
 					str = in.readLine();
 					if(str.equals("exit")) break;
 					
-					// Отправляем всем клиентам очередное сообщение
 					synchronized(connections) {
 						Iterator<Connection> iter = connections.iterator();
 						while(iter.hasNext()) {
@@ -106,7 +105,7 @@ public class Server {
 				synchronized(connections) {
 					Iterator<Connection> iter = connections.iterator();
 					while(iter.hasNext()) {
-						((Connection) iter.next()).out.println(name + " has left");
+						((Connection) iter.next()).out.println(name +  Const.personLeft);
 					}
 				}
 			} catch (IOException e) {
@@ -128,7 +127,7 @@ public class Server {
 					System.exit(0);
 				}
 			} catch (Exception e) {
-				System.err.println("Потоки не были закрыты!");
+				System.err.println("Connection in close Server");
 			}
 		}
 	}

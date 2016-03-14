@@ -9,114 +9,112 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
-/**
- * Обеспечивает работу программы в режиме клиента
- * 
- * @author Влад
- */
 // deal with exit
-public class Client {
+public class Client implements JFrameAskName.NameListener {
 	private BufferedReader in;
 	private PrintWriter out;
 	private Socket socket;
+	private Scanner scan;
+	private Resender resend;
+	private JFrameChat frame;
+	private JFrameAskName frameAskName;
 
-	/**
-	 * Запрашивает у пользователя ник и организовывает обмен сообщениями с
-	 * сервером
-	 */
+
+
+
 	public Client() {
-		Scanner scan = new Scanner(System.in);
 
-		System.out.println("Write IP.");
-		System.out.println("In a form: xxx.xxx.xxx.xxx");
 
-		String ip = scan.nextLine();
+
+		scan = new Scanner(System.in);
+
+	//	System.out.println("Write IP.");
+	//	System.out.println("In a form: xxx.xxx.xxx.xxx");
+
+	//	String ip = scan.nextLine();
+
+		String ip = "127.0.0.1";
+
+
 
 		try {
-			// Подключаемся в серверу и получаем потоки(in и out) для передачи сообщений
 			socket = new Socket(ip, Const.Port);
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			out = new PrintWriter(socket.getOutputStream(), true);
 
-			createAndShow();
+			frameAskName = new JFrameAskName();
+			frameAskName.addNameListener(this);
 
-			System.out.println("Write name:");
-			//out.println(scan.nextLine());
-			String name = scan.nextLine();
-			//add to  list of niks
 
-			Resender resend = new Resender();
+
+			//String name = scan.nextLine();
+			//out.println(name);
+
+			resend = new Resender();
 			resend.start();
 
-			String str = "";
-			while (!str.equals("exit")) {
-				str = scan.nextLine();
-				out.println(str);
-			}
-			//??????????????????????????????????????????????????????????????????????????????????????????^
-			resend.setStop();
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			close();
+		}
+
+	}
+
+	public synchronized void sendMessage(String str){
+		out.println(str);
+		if (str.equals("exit")) {
+		resend.setStop();
+		this.close();
+			//close frame
 		}
 	}
 
-	private static void createAndShow(){
-		JFrameMy frame = new JFrameMy();
-		frame.addElementsToPanel();
 
-
-	}
-
-	/**
-	 * Закрывает входной и выходной потоки и сокет
-	 */
-	private void close() {
+	private synchronized void close() {
 		try {
 			in.close();
 			out.close();
 			socket.close();
+			frame.setVisible(false);
+			frame.dispose();
 		} catch (Exception e) {
-			System.err.println("Потоки не были закрыты!");
+			System.err.println("Exception in close");
 		}
 	}
 
-	/**
-	 * Класс в отдельной нити пересылает все сообщения от сервера в консоль.
-	 * Работает пока не будет вызван метод setStop().
-	 * 
-	 * @author Влад
-	 */
+	@Override
+	public void nameAppear(String string) {
+		frame = new JFrameChat(this);
+		out.println(string);
+
+	}
+
+
 	private class Resender extends Thread {
 
 		private boolean stoped;
-		
-		/**
-		 * Прекращает пересылку сообщений
-		 */
 		public void setStop() {
 			stoped = true;
 		}
 
-		/**
-		 * Считывает все сообщения от сервера и печатает их в консоль.
-		 * Останавливается вызовом метода setStop()
-		 * 
-		 * @see Thread#run()
-		 */
+
 		@Override
-		public void run() {
+		public synchronized void run() {
+			stoped = false;
 			try {
 				while (!stoped) {
 					String str = in.readLine();
-					System.out.println(str);
+					frame.messageComes(str);
+
 				}
 			} catch (IOException e) {
-				System.err.println("Ошибка при получении сообщения.");
+				System.err.println("Exception in run");
 				e.printStackTrace();
 			}
 		}
+
 	}
+
+
+
 
 }
