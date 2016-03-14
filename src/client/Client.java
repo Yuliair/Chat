@@ -50,8 +50,6 @@ public class Client implements JFrameAskName.NameListener {
 			//String name = scan.nextLine();
 			//out.println(name);
 
-			resend = new Resender();
-			resend.start();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -84,6 +82,8 @@ public class Client implements JFrameAskName.NameListener {
 	@Override
 	public void nameAppear(String string) {
 		frame = new JFrameChat(this);
+		resend = new Resender();
+		resend.start();
 		out.println(string);
 
 	}
@@ -103,6 +103,7 @@ public class Client implements JFrameAskName.NameListener {
 			try {
 				while (!stoped) {
 					String str = in.readLine();
+					System.out.println(str);
 					frame.messageComes(str);
 
 				}

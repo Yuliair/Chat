@@ -8,10 +8,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class Server {
 
@@ -19,8 +16,10 @@ public class Server {
 	private List<Connection> connections =
 			Collections.synchronizedList(new ArrayList<Connection>());
 	private ServerSocket server;
+	private List<String> names;
 
 	public Server() {
+		names = new LinkedList<>();
 		try {
 			server = new ServerSocket(Const.Port);
 
@@ -80,7 +79,16 @@ public class Server {
 		@Override
 		public void run() {
 			try {
+				synchronized (names){
+					Iterator<String> iterator = names.iterator();
+					while(iterator.hasNext()){
+						this.out.println(iterator.next()+Const.personIsHere);
+					}
+				}
 				name = in.readLine();
+				synchronized (names) {
+					names.add(name);
+				}
 				// Отправляем всем клиентам сообщение о том, что зашёл новый пользователь
 				synchronized(connections) {
 					Iterator<Connection> iter = connections.iterator();

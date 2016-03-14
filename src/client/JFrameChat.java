@@ -90,16 +90,20 @@ public class JFrameChat extends JFrame implements KeyListener {
 
 
     public void messageComes(String message){
-
-        if (message.endsWith(Const.newPerson)){
-            String name = message.substring(0,message.length()-Const.newPerson.length());
+        if (message.endsWith(Const.personIsHere)){
+            String name = message.substring(0,message.length()-Const.personIsHere.length());
             names.addElement(name);
+        } else {
+
+            if (message.endsWith(Const.newPerson)) {
+                String name = message.substring(0, message.length() - Const.newPerson.length());
+                names.addElement(name);
+            } else if (message.endsWith(Const.personLeft)) {
+                String name = message.substring(0, message.length() - Const.personLeft.length());
+                names.removeElement(name);
+            }
+            textAreaMessages.append("\n" + message);
         }
-        else if (message.endsWith(Const.personLeft)){
-            String name = message.substring(0,message.length()-Const.personLeft.length());
-            names.removeElement(name);
-        }
-        textAreaMessages.append("\n"+message);
         panel.repaint();
     }
 
